@@ -9,6 +9,7 @@ import TrafficInfo from '../components/TrafficInfo'
 import TrainInfo from '../components/TrainInfo'
 import TaxiNews from '../components/TaxiNews'
 import DrivingBriefing from '../components/DrivingBriefing'
+import HanedaInfo from '../components/HanedaInfo'
 
 const TOP_TABS = [
   { key: 'home',  label: 'ホーム' },
@@ -87,6 +88,12 @@ export default function Dashboard() {
       {topTab === 'home'  && <StatusToggle isOnline={isOnline} onToggle={handleToggleOnline} onSimulate={simulateRequest} />}
       {topTab === 'home' && (briefingLoading || briefing) && (
         <DrivingBriefing briefing={briefing} loading={briefingLoading} />
+      )}
+      {topTab === 'home' && (
+        <div className="card">
+          <h2>✈️ 羽田空港 駐車場</h2>
+          <HanedaInfo />
+        </div>
       )}
       {topTab === 'news'  && <TaxiNews />}
       {topTab === 'sales' && (
