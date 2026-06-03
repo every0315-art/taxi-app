@@ -22,7 +22,11 @@ export default function TrainInfo() {
       })
   }, [])
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    fetchData()
+    const timer = setInterval(fetchData, 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [fetchData])
 
   const statusClass = (status) => {
     if (status.includes('見合') || status.includes('運休') || status.includes('脱線')) return 'traffic-bad'
