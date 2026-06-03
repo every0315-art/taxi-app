@@ -61,12 +61,15 @@ export default function Dashboard() {
       )}
 
       {bottomTab && (
-        <div className="bottom-sheet">
-          <div className="bottom-sheet-handle" />
-          {bottomTab === 'event'   && <EventInfo />}
-          {bottomTab === 'traffic' && <TrafficInfo />}
-          {bottomTab === 'train'   && <TrainInfo />}
-        </div>
+        <>
+          <div className="bottom-sheet-backdrop" onClick={() => setBottomTab(null)} />
+          <div className="bottom-sheet">
+            <div className="bottom-sheet-handle" onClick={() => setBottomTab(null)} />
+            {bottomTab === 'event'   && <EventInfo />}
+            {bottomTab === 'traffic' && <TrafficInfo />}
+            {bottomTab === 'train'   && <TrainInfo />}
+          </div>
+        </>
       )}
 
       <nav className="bottom-tab-bar">

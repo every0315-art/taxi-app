@@ -578,12 +578,19 @@ body {
   to   { transform: translateX(-50%) translateY(0);   opacity: 1; }
 }
 
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 54;
+}
+
 .bottom-sheet-handle {
   width: 36px;
   height: 4px;
   background: var(--border);
   border-radius: var(--radius-full);
   margin: 0 auto 16px;
+  cursor: pointer;
 }
 
 /* ─── Ride Request Overlay ─── */
