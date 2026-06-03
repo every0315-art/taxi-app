@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useDriver } from '../hooks/useDriver'
 import StatusToggle from '../components/StatusToggle'
 import RideRequest from '../components/RideRequest'
@@ -8,6 +8,7 @@ import EventInfo from '../components/EventInfo'
 import TrafficInfo from '../components/TrafficInfo'
 import TrainInfo from '../components/TrainInfo'
 import TaxiNews from '../components/TaxiNews'
+import DrivingBriefing from '../components/DrivingBriefing'
 
 const TOP_TABS = [
   { key: 'home',  label: 'ホーム' },
@@ -21,10 +22,42 @@ const BOTTOM_TABS = [
   { key: 'train',   label: '電車状況', icon: '🚆' },
 ]
 
+async function fetchBriefing() {
+  const [evRes, trRes, tnRes] = await Promise.allSettled([
+    fetch('/api/events').then(r => r.json()),
+    fetch('/api/traffic').then(r => r.json()),
+    fetch('/api/train-info').then(r => r.json()),
+  ])
+  return {
+    events:  evRes.status  === 'fulfilled' ? (evRes.value.events   || []) : [],
+    traffic: trRes.status  === 'fulfilled' ? (trRes.value.traffic  || []).filter(t => t.level === 'bad' || t.level === 'mid') : [],
+    trains:  tnRes.status  === 'fulfilled' ? (tnRes.value.delayed  || []) : [],
+  }
+}
+
 export default function Dashboard() {
   const { isOnline, toggleOnline, rideRequest, simulateRequest, acceptRide, rejectRide, sales, addSale, totalSales } = useDriver()
   const [topTab, setTopTab] = useState('home')
   const [bottomTab, setBottomTab] = useState(null)
+  const [briefing, setBriefing] = useState(null)
+  const [briefingLoading, setBriefingLoading] = useState(false)
+
+  const handleToggleOnline = useCallback(async () => {
+    if (!isOnline) {
+      setBriefingLoading(true)
+      setBriefing(null)
+      toggleOnline()
+      try {
+        const data = await fetchBriefing()
+        setBriefing(data)
+      } finally {
+        setBriefingLoading(false)
+      }
+    } else {
+      setBriefing(null)
+      toggleOnline()
+    }
+  }, [isOnline, toggleOnline])
 
   const handleBottomTab = (key) => {
     setBottomTab(prev => prev === key ? null : key)
@@ -51,7 +84,10 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {topTab === 'home'  && <StatusToggle isOnline={isOnline} onToggle={toggleOnline} onSimulate={simulateRequest} />}
+      {topTab === 'home'  && <StatusToggle isOnline={isOnline} onToggle={handleToggleOnline} onSimulate={simulateRequest} />}
+      {topTab === 'home' && (briefingLoading || briefing) && (
+        <DrivingBriefing briefing={briefing} loading={briefingLoading} />
+      )}
       {topTab === 'news'  && <TaxiNews />}
       {topTab === 'sales' && (
         <>

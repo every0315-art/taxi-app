@@ -480,6 +480,84 @@ body {
 .btn-refresh:disabled { opacity: 0.25; cursor: default; }
 .btn-refresh:not(:disabled):active { transform: scale(0.94); opacity: 0.7; }
 
+/* ─── Driving Briefing ─── */
+.briefing-card {
+  border-left: 3px solid var(--accent);
+}
+
+.briefing-header {
+  margin-bottom: 14px;
+}
+
+.briefing-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.briefing-loading {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.briefing-empty {
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.briefing-section {
+  margin-bottom: 12px;
+}
+.briefing-section:last-child { margin-bottom: 0; }
+
+.briefing-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.briefing-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.briefing-item:last-child { border-bottom: none; }
+
+.briefing-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.briefing-item-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.briefing-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
 /* ─── Top Tab Bar ─── */
 .top-tab-bar {
   display: flex;
