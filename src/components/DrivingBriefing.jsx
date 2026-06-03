@@ -13,7 +13,7 @@ export default function DrivingBriefing({ briefing, loading }) {
   return (
     <div className="card briefing-card">
       <div className="briefing-header">
-        <span className="briefing-title">本日の注意情報</span>
+        <span className="briefing-title">{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}の注意情報</span>
       </div>
 
       {!hasItems && (

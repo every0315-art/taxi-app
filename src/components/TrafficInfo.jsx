@@ -53,7 +53,7 @@ export default function TrafficInfo() {
 
           {closures.length > 0 && (
             <>
-              <div className="ic-regulation-header">首都高 出入口閉鎖（本日）</div>
+              <div className="ic-regulation-header">首都高 出入口閉鎖（{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}）</div>
               <div className="traffic-list">
                 {closures.map((c, i) => (
                   <div key={i} className="traffic-item">

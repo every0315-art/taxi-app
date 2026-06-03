@@ -44,7 +44,7 @@ export default function EventInfo() {
       {loading && <div className="train-status-msg">イベント情報を取得中...</div>}
       {error && <div className="train-status-msg error">情報を取得できませんでした</div>}
       {!loading && !error && events.length === 0 && (
-        <div className="train-all-good">本日の大規模イベントはありません</div>
+        <div className="train-all-good">{new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}の大規模イベントはありません</div>
       )}
       {!loading && !error && events.length > 0 && (
         <div className="event-list">
