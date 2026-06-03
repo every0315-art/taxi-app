@@ -50,7 +50,9 @@ export default function EventInfo() {
         <div className="event-list">
           {events.map((ev, i) => (
             <div key={i} className="event-item">
-              <div className="event-date">今日</div>
+              <div className="event-date">
+                {new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}
+              </div>
               <div className="event-detail">
                 <div className="event-name">{ev.name}</div>
                 <div className="event-area">📍{ev.area}　{ev.venue}</div>
