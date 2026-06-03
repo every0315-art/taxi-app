@@ -1,5 +1,7 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
+  // 1時間キャッシュ（CDN経由なら1時間に1回のみAPI呼び出し）
+  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600')
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -28,8 +30,8 @@ export default async function handler(req, res) {
 [{"name":"イベント名","area":"エリア","venue":"会場名","cap":人数(数値),"end":"終演時刻HH:MM","level":"high または mid"}]
 見つからない場合は[]のみ。
 
-【必ず検索する会場】以下の会場は必ず個別にイベントの有無を確認すること：
-東京ドーム、神宮球場、有明アリーナ、有明ガーデンシアター、国立競技場、代々木体育館、東京体育館
+【必ず個別に確認する会場】
+東京ドーム、神宮球場、有明アリーナ、有明ガーデンシアター、国立競技場、代々木体育館、東京体育館、日本武道館、サントリーホール、東京オペラシティ
 
 これら以外の1万人規模以上のイベントも含めること。levelはcap5万人以上をhigh、それ未満をmid。`,
         messages: [{ role: 'user', content: '今日の都内イベントをJSON形式で返してください。' }]
