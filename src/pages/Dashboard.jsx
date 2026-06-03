@@ -21,6 +21,7 @@ const BOTTOM_TABS = [
   { key: 'event',   label: 'イベント', icon: '🎪' },
   { key: 'traffic', label: '道路状況', icon: '🚗' },
   { key: 'train',   label: '電車状況', icon: '🚆' },
+  { key: 'airport', label: '空港',     icon: '✈️' },
 ]
 
 async function fetchBriefing() {
@@ -111,6 +112,7 @@ export default function Dashboard() {
             {bottomTab === 'event'   && <EventInfo />}
             {bottomTab === 'traffic' && <TrafficInfo />}
             {bottomTab === 'train'   && <TrainInfo />}
+            {bottomTab === 'airport' && <HanedaInfo />}
           </div>
         </>
       )}
