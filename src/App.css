@@ -600,55 +600,136 @@ body {
 .pool-closed  { background: var(--surface-2);      color: var(--text-tertiary); }
 .pool-unknown { background: var(--surface-2);      color: var(--text-tertiary); }
 
-/* ─── Bus Info ─── */
-.bus-info { display: flex; flex-direction: column; gap: 16px; }
+/* ─── Bus Map ─── */
+.busmap-wrap { display: flex; flex-direction: column; gap: 12px; }
 
-.bus-terminal {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.bus-terminal-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  background: var(--surface-2);
-  padding: 8px 12px 4px;
-}
-
-.bus-terminal-floor {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  background: var(--surface-2);
-  padding: 0 12px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.bus-gate {
+.busmap-legend {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 9px 12px;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
-.bus-gate:last-child { border-bottom: none; }
-
-.bus-stand {
+.busmap-legend-item {
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent);
-  background: rgba(59,130,246,0.08);
-  border-radius: 4px;
-  padding: 2px 6px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 1px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.2px;
+}
+.busmap-legend-item.limousine { background: rgba(59,130,246,0.12); color: var(--accent); }
+.busmap-legend-item.express   { background: rgba(34,197,94,0.12);  color: var(--green); }
+.busmap-legend-item.hotel     { background: rgba(249,115,22,0.10); color: var(--orange); }
+.busmap-legend-item.shuttle   { background: var(--surface-2);      color: var(--text-secondary); }
+
+/* ターミナル道路レイアウト */
+.busmap-road {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.busmap-road-line {
+  position: absolute;
+  top: 38px;
+  left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 8px, transparent 8px 14px);
+  opacity: 0.3;
+  z-index: 0;
 }
 
-.bus-detail { flex: 1; min-width: 0; }
-.bus-operator { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-.bus-dest { font-size: 11px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+.busmap-terminal-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.busmap-building {
+  width: 100%;
+  border: 2px solid;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.busmap-building-label {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  padding: 5px 4px 3px;
+  letter-spacing: -0.3px;
+}
+.busmap-building-sub {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  text-align: center;
+  font-weight: 600;
+  padding: 2px 0;
+  letter-spacing: 0.3px;
+}
+.busmap-building-floor {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 0 2px 5px;
+}
+
+.busmap-arrow {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+.busmap-stops {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.busmap-stop {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.busmap-stop-num {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 24px;
+  text-align: center;
+  line-height: 1.5;
+}
+.hotel-num { background: rgba(249,115,22,0.10); color: var(--orange); font-size: 13px; padding: 0; }
+
+.busmap-stop-info { flex: 1; min-width: 0; }
+.busmap-stop-name { font-size: 9px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.busmap-stop-dest { font-size: 8px; color: var(--text-tertiary); line-height: 1.3; margin-top: 1px; }
+
+/* ターミナル循環バス */
+.busmap-shuttle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.busmap-shuttle-icon { font-size: 22px; flex-shrink: 0; }
+.busmap-shuttle-info { flex: 1; }
+.busmap-shuttle-title { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.busmap-shuttle-route { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+.busmap-shuttle-stand { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
 
 /* ─── Flat Rate Table ─── */
 .fare-note {

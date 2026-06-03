@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import BusMap from './BusMap'
 
 // 羽田空港定額運賃表（東タク協 特別区・武三地区 2026年版）
 // 出典: https://www.taxi-tokyo.or.jp/teigaku/from.html
@@ -104,74 +105,7 @@ export default function HanedaInfo() {
         </>
       )}
 
-      {tab === 'bus' && (
-        <div className="bus-info">
-          {[
-            { terminal: '第1ターミナル（国内線）', floor: '1F 到着ロビー外', gates: [
-              { name: '京急バス・リムジン', stand: '1番のりば', dest: '品川・新橋・東京・横浜方面' },
-              { name: 'エアポートバス東京・横浜', stand: '2番のりば', dest: '東京駅・横浜方面（格安）' },
-              { name: '東京空港交通（リムジン）', stand: '3番のりば', dest: '都内各ホテル・新宿・池袋方面' },
-            ]},
-            { terminal: '第2ターミナル（国内線）', floor: '1F 到着ロビー外', gates: [
-              { name: '京急バス・リムジン', stand: '1番のりば', dest: '品川・新橋・東京・横浜方面' },
-              { name: 'エアポートバス東京・横浜', stand: '2番のりば', dest: '東京駅・横浜方面（格安）' },
-              { name: '東京空港交通（リムジン）', stand: '3番のりば', dest: '都内各ホテル・新宿・池袋方面' },
-            ]},
-            { terminal: '第3ターミナル（国際線）', floor: '1F 到着ロビー外', gates: [
-              { name: '京急バス・リムジン', stand: '1・2番のりば', dest: '品川・新橋・東京・横浜方面' },
-              { name: 'エアポートバス東京・横浜', stand: '3番のりば', dest: '東京駅・横浜方面（格安）' },
-              { name: '東京空港交通（リムジン）', stand: '4〜6番のりば', dest: '都内各ホテル・新宿・池袋・成田方面' },
-            ]},
-          ].map((t, ti) => (
-            <div key={ti} className="bus-terminal">
-              <div className="bus-terminal-name">{t.terminal}</div>
-              <div className="bus-terminal-floor">{t.floor}</div>
-              {t.gates.map((g, gi) => (
-                <div key={gi} className="bus-gate">
-                  <span className="bus-stand">{g.stand}</span>
-                  <div className="bus-detail">
-                    <div className="bus-operator">{g.name}</div>
-                    <div className="bus-dest">{g.dest}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-          <div className="bus-terminal">
-            <div className="bus-terminal-name">🔄 ターミナル間循環バス</div>
-            <div className="bus-terminal-floor">無料 / 各ターミナル1F 到着ロビー外</div>
-            <div className="bus-gate">
-              <span className="bus-stand">循環</span>
-              <div className="bus-detail">
-                <div className="bus-operator">羽田空港ターミナル連絡バス</div>
-                <div className="bus-dest">第1T ↔ 第2T ↔ 第3T（国際線）所要約15分</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bus-terminal">
-            <div className="bus-terminal-name">🏨 近隣ホテル送迎バス</div>
-            <div className="bus-terminal-floor">各ターミナル1F 到着ロビー外 / 無料</div>
-            {[
-              { hotel: 'ホテル JAL シティ羽田 東京', time: '各T随時', stand: '要確認' },
-              { hotel: '羽田エクセルホテル東急', time: '第1・2T 随時', stand: '1F 外' },
-              { hotel: 'ファーストキャビン羽田', time: '第1・3T 随時', stand: '要確認' },
-              { hotel: 'ヴィラフォンテーヌ羽田空港', time: '各T随時', stand: '1F 外' },
-              { hotel: 'プレミアホテル-CABIN-羽田', time: '第1T 随時', stand: '要確認' },
-            ].map((h, i) => (
-              <div key={i} className="bus-gate">
-                <span className="bus-stand">{h.stand}</span>
-                <div className="bus-detail">
-                  <div className="bus-operator">{h.hotel}</div>
-                  <div className="bus-dest">{h.time}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="fare-source">参考情報 / 最新情報は各社公式でご確認ください</div>
-        </div>
-      )}
+      {tab === 'bus' && <BusMap />}
 
       {tab === 'fare' && (
         <>
