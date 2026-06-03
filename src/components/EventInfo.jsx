@@ -27,11 +27,7 @@ export default function EventInfo() {
       })
   }, [])
 
-  useEffect(() => {
-    fetchData()
-    const timer = setInterval(fetchData, 60 * 60 * 1000)
-    return () => clearInterval(timer)
-  }, [fetchData])
+  useEffect(() => { fetchData() }, [fetchData])
 
   return (
     <div>

@@ -28,11 +28,7 @@ export default function TrafficInfo() {
       })
   }, [])
 
-  useEffect(() => {
-    fetchData()
-    const timer = setInterval(fetchData, 5 * 60 * 1000)
-    return () => clearInterval(timer)
-  }, [fetchData])
+  useEffect(() => { fetchData() }, [fetchData])
 
   return (
     <div>
