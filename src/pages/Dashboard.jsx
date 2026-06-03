@@ -10,6 +10,7 @@ import TrainInfo from '../components/TrainInfo'
 import TaxiNews from '../components/TaxiNews'
 import DrivingBriefing from '../components/DrivingBriefing'
 import HanedaInfo from '../components/HanedaInfo'
+import HomePickup from '../components/HomePickup'
 
 const TOP_TABS = [
   { key: 'home',  label: 'ホーム' },
@@ -91,10 +92,7 @@ export default function Dashboard() {
         <DrivingBriefing briefing={briefing} loading={briefingLoading} />
       )}
       {topTab === 'home' && (
-        <div className="card">
-          <h2>✈️ 羽田空港 駐車場</h2>
-          <HanedaInfo />
-        </div>
+        <HomePickup onTabOpen={(key) => setBottomTab(prev => prev === key ? null : key)} />
       )}
       {topTab === 'news'  && <TaxiNews />}
       {topTab === 'sales' && (

@@ -480,6 +480,73 @@ body {
 .btn-refresh:disabled { opacity: 0.25; cursor: default; }
 .btn-refresh:not(:disabled):active { transform: scale(0.94); opacity: 0.7; }
 
+/* ─── Home Pickup ─── */
+.pickup-card { padding: 14px 16px; }
+
+.pickup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pickup-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.pickup-tile:active { opacity: 0.7; }
+
+.pickup-tile-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pickup-icon { font-size: 16px; line-height: 1; }
+
+.pickup-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.pickup-tile-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+}
+
+.pickup-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.pickup-sub.ok    { color: var(--green); font-weight: 700; }
+.pickup-sub.error { color: var(--text-tertiary); }
+
+.pickup-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.2px;
+}
+.pickup-badge.warn  { background: rgba(234,179,8,0.15);  color: var(--yellow); }
+.pickup-badge.alert { background: rgba(239,68,68,0.10);  color: var(--red); }
+.pickup-badge.ok    { background: rgba(34,197,94,0.12);  color: var(--green); }
+
 /* ─── Haneda Parking ─── */
 .haneda-alert {
   font-size: 13px;
