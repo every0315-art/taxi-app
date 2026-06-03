@@ -24,10 +24,15 @@ export default async function handler(req, res) {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `今日（${today}）の東京都内で開催される1万人規模以上のイベントをウェブ検索し、以下のJSON配列のみ返してください。説明・前置き・Markdownは不要です。
-[{"name":"イベント名","area":"エリア","venue":"会場名","cap":人数(数値),"end":"終演時刻","level":"high"}]
-見つからない場合は[]のみ。`,
-        messages: [{ role: 'user', content: '今日の都内大規模イベントをJSON形式で返してください。' }]
+        system: `今日（${today}）の東京都内のイベントをウェブ検索し、以下のJSON配列のみ返してください。説明・前置き・Markdownは不要です。
+[{"name":"イベント名","area":"エリア","venue":"会場名","cap":人数(数値),"end":"終演時刻HH:MM","level":"high または mid"}]
+見つからない場合は[]のみ。
+
+【必ず検索する会場】以下の会場は必ず個別にイベントの有無を確認すること：
+東京ドーム、神宮球場、有明アリーナ、有明ガーデンシアター、国立競技場、代々木体育館、東京体育館
+
+これら以外の1万人規模以上のイベントも含めること。levelはcap5万人以上をhigh、それ未満をmid。`,
+        messages: [{ role: 'user', content: '今日の都内イベントをJSON形式で返してください。' }]
       })
     })
 
