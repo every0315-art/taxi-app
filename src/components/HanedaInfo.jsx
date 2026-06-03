@@ -1,19 +1,29 @@
 import { useState, useEffect, useCallback } from 'react'
 import BusMap from './BusMap'
 
-// 羽田空港定額運賃表（東タク協 特別区・武三地区 2026年版）
-// 出典: https://www.taxi-tokyo.or.jp/teigaku/from.html
+// 羽田空港定額運賃表（東タク協 特別区・武三版 2026年4月20日適用）
+// 出典: https://www.taxi-tokyo.or.jp/teigaku/from.html ※首都高利用前提、有料道路別途
+// ※品川区・目黒区・港区・大田区・中央区・江東区はメーター制（定額対象外）
 const FLAT_RATES = [
-  { area: '大田区（空港周辺）',   day: '〜2,000', night: '〜2,600' },
-  { area: '品川区・目黒区',       day: '3,000〜4,000', night: '3,900〜5,200' },
-  { area: '港区',                 day: '4,500〜5,500', night: '5,900〜7,200' },
-  { area: '渋谷区・世田谷区',     day: '4,500〜5,500', night: '5,900〜7,200' },
-  { area: '新宿区・中野区',       day: '5,500〜6,500', night: '7,200〜8,500' },
-  { area: '千代田区・中央区',     day: '5,500〜6,500', night: '7,200〜8,500' },
-  { area: '台東区・文京区',       day: '6,500〜7,500', night: '8,500〜9,800' },
-  { area: '墨田区・江東区',       day: '6,500〜8,000', night: '8,500〜10,400' },
-  { area: '北区・板橋区・練馬区', day: '7,500〜9,000', night: '9,800〜11,700' },
-  { area: '足立区・葛飾区・江戸川区', day: '8,000〜10,500', night: '10,400〜13,700' },
+  { area: '千代田区',   day: '7,600',  night: '9,000' },
+  { area: '渋谷区',     day: '8,500',  night: '10,000' },
+  { area: '世田谷区',   day: '8,900',  night: '10,400' },
+  { area: '台東区',     day: '9,100',  night: '10,800' },
+  { area: '墨田区',     day: '9,100',  night: '10,700' },
+  { area: '新宿区',     day: '9,000',  night: '10,700' },
+  { area: '文京区',     day: '9,300',  night: '10,900' },
+  { area: '中野区',     day: '9,900',  night: '11,700' },
+  { area: '荒川区',     day: '10,400', night: '12,200' },
+  { area: '杉並区',     day: '10,800', night: '12,600' },
+  { area: '北区',       day: '11,000', night: '13,000' },
+  { area: '豊島区',     day: '11,200', night: '13,200' },
+  { area: '足立区',     day: '11,100', night: '13,100' },
+  { area: '江戸川区',   day: '9,000',  night: '10,500' },
+  { area: '葛飾区',     day: '11,300', night: '13,400' },
+  { area: '板橋区',     day: '12,300', night: '14,500' },
+  { area: '練馬区',     day: '12,800', night: '15,100' },
+  { area: '武蔵野市',   day: '14,000', night: '16,500' },
+  { area: '三鷹市',     day: '13,300', night: '15,700' },
 ]
 
 const STATUS_CLASS = { 空車: 'haneda-ok', 混雑: 'haneda-mid', 満車: 'haneda-full', エラー: 'haneda-err' }
@@ -109,7 +119,7 @@ export default function HanedaInfo() {
 
       {tab === 'fare' && (
         <>
-          <div className="fare-note">※首都高利用前提。深夜(22時〜5時)は割増。有料道路別途。</div>
+          <div className="fare-note">首都高利用前提・有料道路別途。深夜(22時〜5時)は割増額。<br />品川・目黒・港・大田・中央・江東区はメーター制。</div>
           <div className="fare-table">
             <div className="fare-row fare-header">
               <span>エリア</span>
@@ -125,7 +135,7 @@ export default function HanedaInfo() {
             ))}
           </div>
           <div className="fare-source">
-            出典: <a href="https://www.taxi-tokyo.or.jp/teigaku/from.html" target="_blank" rel="noopener noreferrer">東タク協 公式サイト</a>（目安額）
+            <a href="https://www.taxi-tokyo.or.jp/teigaku/from.html" target="_blank" rel="noopener noreferrer">東タク協 公式</a> 特別区・武三版 2026年4月20日適用
           </div>
         </>
       )}
