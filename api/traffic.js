@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
       if (type === '入口閉鎖' || type === '出口閉鎖') {
         closures.push({ name: name.trim() })
-      } else if (type && type !== '規制なし') {
+      } else if (type && type !== '規制なし' && !type.includes('車線規制')) {
         const detail = [cause, endPoint ? `〜${endPoint}` : ''].filter(Boolean).join(' ')
         const level = type.includes('通行止') ? 'bad' : 'mid'
         traffic.push({
