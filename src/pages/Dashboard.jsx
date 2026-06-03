@@ -9,18 +9,25 @@ import TrafficInfo from '../components/TrafficInfo'
 import TrainInfo from '../components/TrainInfo'
 import TaxiNews from '../components/TaxiNews'
 
-const TABS = [
-  { key: 'event',   label: 'イベント',  icon: '🎪' },
-  { key: 'traffic', label: '道路状況',  icon: '🚗' },
-  { key: 'train',   label: '電車状況',  icon: '🚆' },
+const TOP_TABS = [
+  { key: 'home',  label: 'ホーム' },
+  { key: 'news',  label: 'ニュース' },
+  { key: 'sales', label: '売上' },
+]
+
+const BOTTOM_TABS = [
+  { key: 'event',   label: 'イベント', icon: '🎪' },
+  { key: 'traffic', label: '道路状況', icon: '🚗' },
+  { key: 'train',   label: '電車状況', icon: '🚆' },
 ]
 
 export default function Dashboard() {
   const { isOnline, toggleOnline, rideRequest, simulateRequest, acceptRide, rejectRide, sales, addSale, totalSales } = useDriver()
-  const [activeTab, setActiveTab] = useState(null)
+  const [topTab, setTopTab] = useState('home')
+  const [bottomTab, setBottomTab] = useState(null)
 
-  const handleTabClick = (key) => {
-    setActiveTab(prev => prev === key ? null : key)
+  const handleBottomTab = (key) => {
+    setBottomTab(prev => prev === key ? null : key)
   }
 
   return (
@@ -32,26 +39,42 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <StatusToggle isOnline={isOnline} onToggle={toggleOnline} onSimulate={simulateRequest} />
-      <TaxiNews />
-      <DailySummary sales={sales} totalSales={totalSales} />
-      <SalesRecord onAdd={addSale} />
+      <div className="top-tab-bar">
+        {TOP_TABS.map(t => (
+          <button
+            key={t.key}
+            className={`top-tab ${topTab === t.key ? 'top-tab-active' : ''}`}
+            onClick={() => setTopTab(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {activeTab && (
+      {topTab === 'home'  && <StatusToggle isOnline={isOnline} onToggle={toggleOnline} onSimulate={simulateRequest} />}
+      {topTab === 'news'  && <TaxiNews />}
+      {topTab === 'sales' && (
+        <>
+          <DailySummary sales={sales} totalSales={totalSales} />
+          <SalesRecord onAdd={addSale} />
+        </>
+      )}
+
+      {bottomTab && (
         <div className="bottom-sheet">
           <div className="bottom-sheet-handle" />
-          {activeTab === 'event'   && <EventInfo />}
-          {activeTab === 'traffic' && <TrafficInfo />}
-          {activeTab === 'train'   && <TrainInfo />}
+          {bottomTab === 'event'   && <EventInfo />}
+          {bottomTab === 'traffic' && <TrafficInfo />}
+          {bottomTab === 'train'   && <TrainInfo />}
         </div>
       )}
 
       <nav className="bottom-tab-bar">
-        {TABS.map(t => (
+        {BOTTOM_TABS.map(t => (
           <button
             key={t.key}
-            className={`bottom-tab ${activeTab === t.key ? 'bottom-tab-active' : ''}`}
-            onClick={() => handleTabClick(t.key)}
+            className={`bottom-tab ${bottomTab === t.key ? 'bottom-tab-active' : ''}`}
+            onClick={() => handleBottomTab(t.key)}
           >
             <span className="bottom-tab-icon">{t.icon}</span>
             <span className="bottom-tab-label">{t.label}</span>

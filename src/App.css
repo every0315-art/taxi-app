@@ -480,6 +480,35 @@ body {
 .btn-refresh:disabled { opacity: 0.25; cursor: default; }
 .btn-refresh:not(:disabled):active { transform: scale(0.94); opacity: 0.7; }
 
+/* ─── Top Tab Bar ─── */
+.top-tab-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.top-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: -0.2px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-tab-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* ─── Bottom Tab Bar ─── */
 .bottom-tab-bar {
   position: fixed;
