@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react'
 
 async function loadAll() {
-  const [evRes, trRes, tnRes, hdRes] = await Promise.allSettled([
+  const [evRes, trRes, tnRes, hdRes, tpRes] = await Promise.allSettled([
     fetch('/api/events').then(r => r.json()),
     fetch('/api/traffic').then(r => r.json()),
     fetch('/api/train-info').then(r => r.json()),
     fetch('/api/haneda').then(r => r.json()),
+    fetch('/api/taxi-pool').then(r => r.json()),
   ])
   return {
     events:  evRes.status === 'fulfilled' ? (evRes.value.events  || []) : null,
     traffic: trRes.status === 'fulfilled' ? trRes.value : null,
     trains:  tnRes.status === 'fulfilled' ? (tnRes.value.delayed || []) : null,
     parking: hdRes.status === 'fulfilled' ? (hdRes.value.parking || []) : null,
+    pools:   tpRes.status === 'fulfilled' ? (tpRes.value.pools   || []) : null,
   }
 }
 
@@ -51,20 +53,32 @@ function TrainSummary({ trains }) {
   )
 }
 
-function AirportSummary({ parking }) {
-  if (parking === null) return <span className="pickup-sub error">取得失敗</span>
-  const full  = parking.filter(p => p.status === '満車').length
-  const crowd = parking.filter(p => p.status === '混雑').length
-  if (full === parking.length && parking.length > 0)
-    return <span className="pickup-badge alert">全棟満車</span>
-  if (full > 0)
-    return <>
-      <span className="pickup-badge alert">満車 {full}棟</span>
-      {crowd > 0 && <span className="pickup-badge warn">混雑 {crowd}棟</span>}
+function AirportSummary({ parking, pools }) {
+  const allClosed = pools && pools.length > 0 && pools.every(p => p.level === 'closed')
+  const busyPools = pools ? pools.filter(p => p.level === 'busy').length : 0
+
+  const full  = parking ? parking.filter(p => p.status === '満車').length : 0
+  const crowd = parking ? parking.filter(p => p.status === '混雑').length : 0
+  const allFull = parking && parking.length > 0 && full === parking.length
+
+  if (parking === null && pools === null) return <span className="pickup-sub error">取得失敗</span>
+
+  return (
+    <>
+      {allClosed
+        ? <span className="pickup-sub">プール運用外</span>
+        : busyPools > 0
+          ? <span className="pickup-badge warn">P混雑 {busyPools}箇所</span>
+          : <span className="pickup-sub ok">P空き</span>
+      }
+      {allFull
+        ? <span className="pickup-badge alert">駐車場満車</span>
+        : full > 0
+          ? <span className="pickup-badge warn">満車 {full}棟</span>
+          : null
+      }
     </>
-  if (crowd > 0)
-    return <span className="pickup-badge warn">混雑 {crowd}棟</span>
-  return <span className="pickup-sub ok">空きあり</span>
+  )
 }
 
 export default function HomePickup({ onTabOpen }) {
@@ -99,7 +113,7 @@ export default function HomePickup({ onTabOpen }) {
                   {t.key === 'event'   && <EventSummary   events={data?.events} />}
                   {t.key === 'traffic' && <TrafficSummary data={data?.traffic} />}
                   {t.key === 'train'   && <TrainSummary   trains={data?.trains} />}
-                  {t.key === 'airport' && <AirportSummary parking={data?.parking} />}
+                  {t.key === 'airport' && <AirportSummary parking={data?.parking} pools={data?.pools} />}
                 </>
               )}
             </div>

@@ -547,6 +547,146 @@ body {
 .pickup-badge.alert { background: rgba(239,68,68,0.10);  color: var(--red); }
 .pickup-badge.ok    { background: rgba(34,197,94,0.12);  color: var(--green); }
 
+/* ─── Airport Tabs ─── */
+.airport-tabs {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: 14px;
+  gap: 2px;
+}
+.airport-tab {
+  flex: 1;
+  padding: 7px 4px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.airport-tab-active {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── Taxi Pool ─── */
+.pool-list { display: flex; flex-direction: column; gap: 0; }
+.pool-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pool-item:last-child { border-bottom: none; }
+.pool-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.pool-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+}
+.pool-free    { background: rgba(34,197,94,0.12);  color: var(--green); }
+.pool-normal  { background: rgba(59,130,246,0.10); color: var(--accent); }
+.pool-busy    { background: rgba(234,179,8,0.12);  color: var(--yellow); }
+.pool-closed  { background: var(--surface-2);      color: var(--text-tertiary); }
+.pool-unknown { background: var(--surface-2);      color: var(--text-tertiary); }
+
+/* ─── Bus Info ─── */
+.bus-info { display: flex; flex-direction: column; gap: 16px; }
+
+.bus-terminal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.bus-terminal-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  padding: 8px 12px 4px;
+}
+
+.bus-terminal-floor {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--surface-2);
+  padding: 0 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bus-gate {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.bus-gate:last-child { border-bottom: none; }
+
+.bus-stand {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(59,130,246,0.08);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.bus-detail { flex: 1; min-width: 0; }
+.bus-operator { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.bus-dest { font-size: 11px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+
+/* ─── Flat Rate Table ─── */
+.fare-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.fare-table { display: flex; flex-direction: column; gap: 0; }
+.fare-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.fare-row:last-child { border-bottom: none; }
+.fare-header { padding-bottom: 6px; }
+.fare-header span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.fare-area { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+.fare-price { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; text-align: right; }
+.fare-price.night { color: var(--text-secondary); }
+.fare-source {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.fare-source a { color: var(--accent); text-decoration: none; }
+
 /* ─── Haneda Parking ─── */
 .haneda-alert {
   font-size: 13px;
