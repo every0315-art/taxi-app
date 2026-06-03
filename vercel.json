@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/train/:path*",
+      "destination": "https://tetsudo.rti-giken.jp/:path*"
+    }
+  ]
+}
