@@ -31,6 +31,16 @@ export default function EventInfo() {
 
   return (
     <div>
+      <div className="traffic-update-row">
+        {updatedAt && (
+          <span className="traffic-update">
+            Claude AI / {updatedAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        <button className="btn-refresh" onClick={fetchData} disabled={loading}>
+          {loading ? '取得中...' : '更新'}
+        </button>
+      </div>
       {loading && <div className="train-status-msg">イベント情報を取得中...</div>}
       {error && <div className="train-status-msg error">情報を取得できませんでした</div>}
       {!loading && !error && events.length === 0 && (
@@ -53,14 +63,6 @@ export default function EventInfo() {
           ))}
         </div>
       )}
-      <div className="traffic-update-row">
-        {updatedAt && (
-          <span className="traffic-update">
-            Claude AI / {updatedAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        )}
-        <button className="btn-refresh" onClick={fetchData} disabled={loading}>更新</button>
-      </div>
     </div>
   )
 }
