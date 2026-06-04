@@ -80,7 +80,16 @@ async function fetchJinguEvents(day, month, year) {
           for (const d of (mon.monthData || [])) {
             if (d.day !== day) continue
             for (const ev of (d.dayData || [])) {
-              events.push({ name: ev.category || '試合', area: '新宿区', venue: '神宮球場', cap: 30000, end: '21:00', level: 'mid', _source: 'jingu' })
+              // チーム名をaltから取得してvsで結ぶ
+              let name = ev.category || '試合'
+              if (ev.value?.length > 0) {
+                const v = ev.value[0]
+                const t1 = (v.team1 || '').match(/alt='([^']+)'/)
+                const t2 = (v.team2 || '').match(/alt='([^']+)'/)
+                if (t1 && t2) name = `${t1[1]} vs ${t2[1]}`
+              }
+              const end = ev.time ? ev.time : '21:00'
+              events.push({ name, area: '新宿区', venue: '神宮球場', cap: 30000, end, level: 'mid', _source: 'jingu' })
             }
           }
         }
@@ -90,12 +99,26 @@ async function fetchJinguEvents(day, month, year) {
   } catch { return [] }
 }
 
+function normalize(s) {
+  return s.replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[\s　ー－-]/g, '').toLowerCase()
+}
+
 function dedup(events) {
   const seen = new Set()
   return events.filter(e => {
-    const key = e.name.slice(0, 10) + e.venue
+    // 会場＋名前（先頭12文字正規化）でキー生成
+    const key = e.venue + ':' + normalize(e.name).slice(0, 12)
     if (seen.has(key)) return false
     seen.add(key)
+    // 同じ会場で既存エントリーの名前に含まれる場合も重複扱い
+    for (const k of seen) {
+      if (k !== key && k.startsWith(e.venue + ':')) {
+        const existing = k.slice(e.venue.length + 1)
+        const current = normalize(e.name).slice(0, 12)
+        if (existing.includes(current) || current.includes(existing)) return false
+      }
+    }
     return true
   })
 }
