@@ -103,6 +103,34 @@ async function fetchJinguEvents(day, month, year) {
   } catch { return [] }
 }
 
+// 有明ガーデンシアター（東京ガーデンシアター）
+async function fetchGardenTheaterEvents(day, month) {
+  const MM = String(month).padStart(2, '0')
+  const DD = String(day).padStart(2, '0')
+  const events = []
+  try {
+    const html = await fetch('https://www.shopping-sumitomo-rd.com/tokyo_garden_theater/schedule/', { headers: HEADERS }).then(r => r.text())
+    let text = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
+    text = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+
+    const re = new RegExp(`${MM} ${DD} \\w+\\.`, 'g')
+    const seen = new Set()
+    for (const m of text.matchAll(re)) {
+      const chunk = text.slice(m.index, m.index + 300)
+      // ジャンルの次がアーティスト名→イベント名、次の日付で切る
+      const nameMatch = chunk.match(/\d{2} \d{2} \w+\.(?:\s+\d{2} \d{2} \w+\.)?\s+(?:コンサート・ショー|会議・式典・セミナー|スポーツ)\s+\S+\s+(.+?)(?=\s+\d{2} \d{2} |\s*$)/)
+      if (!nameMatch) continue
+      // 重複した単語を除去（アーティスト名がイベント名に入ることがある）
+      const name = nameMatch[1].trim().split(/\s+/).filter((w, i, a) => i === 0 || w !== a[i - 1]).join(' ')
+      if (name && !seen.has(name)) {
+        seen.add(name)
+        events.push({ name, area: '江東区', venue: '有明ガーデンシアター', cap: 8000, end: '21:00', level: 'mid', _source: 'garden' })
+      }
+    }
+  } catch { }
+  return events
+}
+
 // 有明アリーナ
 async function fetchAriakeArenaEvents(day, month) {
   const events = []
@@ -213,15 +241,16 @@ export default async function handler(req, res) {
   const day = now.getDate(), month = now.getMonth() + 1, year = now.getFullYear()
 
   // 各会場を直接スクレイピング（確実）
-  const [domeEvents, jinguEvents, ariakeEvents, yoyogiEvents, gymEvents] = await Promise.all([
+  const [domeEvents, jinguEvents, gardenEvents, ariakeEvents, yoyogiEvents, gymEvents] = await Promise.all([
     fetchTokyoDomeEvents(day, month, year),
     fetchJinguEvents(day, month, year),
+    fetchGardenTheaterEvents(day, month),
     fetchAriakeArenaEvents(day, month),
     fetchYoyogiEvents(day, month, year),
     fetchTokyoGymEvents(day, month, year),
   ])
 
-  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...ariakeEvents, ...yoyogiEvents, ...gymEvents])
+  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...gardenEvents, ...ariakeEvents, ...yoyogiEvents, ...gymEvents])
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
