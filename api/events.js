@@ -103,6 +103,27 @@ async function fetchJinguEvents(day, month, year) {
   } catch { return [] }
 }
 
+// 有明アリーナ
+async function fetchAriakeArenaEvents(day, month) {
+  const events = []
+  try {
+    const html = await fetch('https://ariake-arena.tokyo/event/', { headers: HEADERS }).then(r => r.text())
+    const blocks = [...html.matchAll(/class="detail_top_content"[^>]*>([\s\S]*?)(?=class="detail_top_content"|<\/section>|$)/g)].map(m => m[1])
+    const seen = new Set()
+    for (const block of blocks) {
+      const dates = [...block.matchAll(/<span>(\d+)\.(\d+)\s+\w+<\/span>/g)].map(m => ({ m: parseInt(m[1]), d: parseInt(m[2]) }))
+      if (!dates.some(d => d.m === month && d.d === day)) continue
+      const nameMatch = block.match(/class="event_name"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/)
+      const name = nameMatch ? nameMatch[1].replace(/<[^>]+>/g, '').trim() : null
+      if (name && !seen.has(name)) {
+        seen.add(name)
+        events.push({ name, area: '江東区', venue: '有明アリーナ', cap: 15000, end: '21:00', level: 'high', _source: 'ariake' })
+      }
+    }
+  } catch { }
+  return events
+}
+
 // 代々木体育館（第一・第二体育館）
 async function fetchYoyogiEvents(day, month, year) {
   const dateStr = `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`
@@ -192,14 +213,15 @@ export default async function handler(req, res) {
   const day = now.getDate(), month = now.getMonth() + 1, year = now.getFullYear()
 
   // 各会場を直接スクレイピング（確実）
-  const [domeEvents, jinguEvents, yoyogiEvents, gymEvents] = await Promise.all([
+  const [domeEvents, jinguEvents, ariakeEvents, yoyogiEvents, gymEvents] = await Promise.all([
     fetchTokyoDomeEvents(day, month, year),
     fetchJinguEvents(day, month, year),
+    fetchAriakeArenaEvents(day, month),
     fetchYoyogiEvents(day, month, year),
     fetchTokyoGymEvents(day, month, year),
   ])
 
-  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...yoyogiEvents, ...gymEvents])
+  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...ariakeEvents, ...yoyogiEvents, ...gymEvents])
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {

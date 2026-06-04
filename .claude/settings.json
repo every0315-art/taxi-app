@@ -6,11 +6,16 @@
       "Bash(npm run build *)",
       "Bash(git push *)",
       "Bash(git commit *)",
+      "Bash(git add *)",
       "Bash(npx vercel *)",
-      "Bash(node --input-type=module *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
       "Bash(dig *)",
       "Bash(for *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(mkdir *)",
+      "Bash(pkill *)",
+      "Bash(sleep *)"
     ]
   }
 }
