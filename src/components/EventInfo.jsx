@@ -11,10 +11,11 @@ export default function EventInfo() {
   const [error, setError] = useState(false)
   const [updatedAt, setUpdatedAt] = useState(null)
 
-  const fetchData = useCallback(() => {
+  const fetchData = useCallback((bust = false) => {
     setLoading(true)
     setError(false)
-    fetch('/api/events')
+    const url = bust ? `/api/events?t=${Date.now()}` : '/api/events'
+    fetch(url)
       .then(r => r.json())
       .then(data => {
         setEvents(data.events || [])
@@ -37,7 +38,7 @@ export default function EventInfo() {
             Claude AI / {updatedAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
-        <button className="btn-refresh" onClick={fetchData} disabled={loading}>
+        <button className="btn-refresh" onClick={() => fetchData(true)} disabled={loading}>
           {loading ? '取得中...' : '更新'}
         </button>
       </div>
