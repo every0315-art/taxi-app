@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",
+      "Bash(npm run build)",
+      "Bash(npm run build *)",
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(npx vercel *)",
+      "Bash(node --input-type=module *)",
+      "Bash(dig *)",
+      "Bash(for *)",
+      "Bash(pip3 install *)"
+    ]
+  }
+}

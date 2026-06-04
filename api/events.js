@@ -103,6 +103,53 @@ async function fetchJinguEvents(day, month, year) {
   } catch { return [] }
 }
 
+// 代々木体育館（第一・第二体育館）
+async function fetchYoyogiEvents(day, month, year) {
+  const dateStr = `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`
+  const events = []
+  try {
+    for (const [tabid, label, area] of [['59','代々木第一体育館','渋谷区'],['60','代々木第二体育館','渋谷区']]) {
+      const html = await fetch(`https://www.jpnsport.go.jp/yoyogi/event/tabid/${tabid}/Default.aspx`, { headers: HEADERS }).then(r => r.text())
+      const rows = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map(m => m[1])
+      const seen = new Set()
+      for (const row of rows) {
+        const text = row.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+        if (!text.startsWith(dateStr)) continue
+        const name = text.slice(dateStr.length).replace(/^\([^)]+\)\s*/, '').trim()
+        if (name && !seen.has(name)) {
+          seen.add(name)
+          events.push({ name, area, venue: label, cap: 12000, end: '21:00', level: 'mid', _source: 'yoyogi' })
+        }
+      }
+    }
+  } catch { }
+  return events
+}
+
+// 東京体育館（メインアリーナ）
+async function fetchTokyoGymEvents(day, month, year) {
+  const JA_MONTHS = ['','1','2','3','4','5','6','7','8','9','10','11','12']
+  const dateStr = `${year}年${JA_MONTHS[month]}月${day}日`
+  const events = []
+  try {
+    const html = await fetch('https://www.tef.or.jp/tmg/arena/index.html', { headers: HEADERS }).then(r => r.text())
+    const rows = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map(m => m[1])
+    const seen = new Set()
+    for (const row of rows) {
+      if (!row.includes(dateStr)) continue
+      const text = row.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      // フォーマット: "メインアリーナ 2026年6月6日（土） イベント名 有 主催団体"
+      const nameMatch = text.match(/\d{4}年\d+月\d+日[（(][^)）]+[)）]\s+(.+?)(?:\s+(?:有|無|公式HP|特設サイト)|$)/)
+      const name = nameMatch ? nameMatch[1].trim() : null
+      if (name && !seen.has(name)) {
+        seen.add(name)
+        events.push({ name, area: '渋谷区', venue: '東京体育館', cap: 10000, end: '21:00', level: 'mid', _source: 'gym' })
+      }
+    }
+  } catch { }
+  return events
+}
+
 function estimateEnd(startTime, category = '') {
   if (!startTime || startTime === '0000') return '21:00'
   const [h, m] = startTime.split(':').map(Number)
@@ -144,13 +191,15 @@ export default async function handler(req, res) {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }))
   const day = now.getDate(), month = now.getMonth() + 1, year = now.getFullYear()
 
-  // 東京ドーム・神宮球場は直接スクレイピング（確実）
-  const [domeEvents, jinguEvents] = await Promise.all([
+  // 各会場を直接スクレイピング（確実）
+  const [domeEvents, jinguEvents, yoyogiEvents, gymEvents] = await Promise.all([
     fetchTokyoDomeEvents(day, month, year),
     fetchJinguEvents(day, month, year),
+    fetchYoyogiEvents(day, month, year),
+    fetchTokyoGymEvents(day, month, year),
   ])
 
-  const venueEvents = dedup([...domeEvents, ...jinguEvents])
+  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...yoyogiEvents, ...gymEvents])
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
