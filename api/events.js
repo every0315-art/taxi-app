@@ -1,3 +1,5 @@
+import { parse } from 'node-html-parser'
+
 // 年間大規模イベントリスト（Notionデータベースより）
 const ANNUAL_EVENTS = `
 【1月】浅草寺初詣(1/1-3 浅草寺 数百万人), 東京オートサロン(1/9-11 幕張メッセ), 世田谷ボロ市(1/15-16 世田谷)
@@ -14,17 +16,86 @@ const ANNUAL_EVENTS = `
 【12月】羽子板市(12/17-19 浅草寺), ジャンプフェスタ(12/19-20 幕張メッセ), コミックマーケット冬(12/29-31 東京ビッグサイト), カウントダウン年末イベント(12/31 都内各所)
 `
 
+const HEADERS = { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15' }
+
+// 東京ドーム公式スケジュールをスクレイピング
+async function fetchTokyoDomeEvents(day, month) {
+  try {
+    const html = await fetch('https://www.tokyo-dome.co.jp/dome/event/schedule.html', { headers: HEADERS }).then(r => r.text())
+    const events = []
+    const rowRegex = /<tr[^>]*class="c-mod-calender__item[^"]*"[^>]*>([\s\S]*?)<\/tr>/g
+    let m
+    while ((m = rowRegex.exec(html)) !== null) {
+      const row = m[1]
+      const dayMatch = row.match(/calender__day">(\d+)</)
+      const dowMatch = row.match(/calender__day">\(([^)]+)\)/)
+      if (!dayMatch || parseInt(dayMatch[1]) !== day) continue
+      // 月の絞り込み（前後月の同日付を除外するため曜日で判定は難しいので全部取る）
+      const titles = [...row.matchAll(/calender__links">([\s\S]*?)<\/p>/g)]
+        .map(([, t]) => t.replace(/<[^>]+>/g, '').trim()).filter(Boolean)
+      for (const name of titles) {
+        events.push({ name, area: '文京区', venue: '東京ドーム', cap: 55000, end: '21:00', level: 'high', _source: 'dome' })
+      }
+    }
+    return events
+  } catch { return [] }
+}
+
+// 神宮球場JSONをスクレイピング
+async function fetchJinguEvents(day, month, year) {
+  try {
+    const data = await fetch('https://www.jingu-stadium.com/event/json/data.json', { headers: HEADERS }).then(r => r.json())
+    const events = []
+    for (const entry of data) {
+      for (const ye of entry) {
+        if (ye.year !== year) continue
+        for (const mon of (ye.yearData || [])) {
+          if (mon.month !== month) continue
+          for (const d of (mon.monthData || [])) {
+            if (d.day !== day) continue
+            for (const ev of (d.dayData || [])) {
+              events.push({ name: ev.category || '試合', area: '新宿区', venue: '神宮球場', cap: 30000, end: '21:00', level: 'mid', _source: 'jingu' })
+            }
+          }
+        }
+      }
+    }
+    return events
+  } catch { return [] }
+}
+
+function dedup(events) {
+  const seen = new Set()
+  return events.filter(e => {
+    const key = e.name.slice(0, 10) + e.venue
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600')
+  // 30分キャッシュ（より新鮮に）
+  res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=300')
+
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }))
+  const day = now.getDate(), month = now.getMonth() + 1, year = now.getFullYear()
+
+  // 東京ドーム・神宮球場は直接スクレイピング（確実）
+  const [domeEvents, jinguEvents] = await Promise.all([
+    fetchTokyoDomeEvents(day, month),
+    fetchJinguEvents(day, month, year),
+  ])
+
+  const venueEvents = dedup([...domeEvents, ...jinguEvents])
 
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured', events: [] })
+  if (!apiKey) {
+    return res.status(200).json({ events: venueEvents, updatedAt: new Date().toISOString() })
+  }
 
-  const today = new Date().toLocaleDateString('ja-JP', {
-    timeZone: 'Asia/Tokyo',
-    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-  })
+  const today = now.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -46,10 +117,9 @@ export default async function handler(req, res) {
 【参考：東京年間大規模イベントカレンダー（Notionデータより）】
 ${ANNUAL_EVENTS}
 
-【必ず個別に検索する会場】
-東京ドーム、神宮球場、有明アリーナ、有明ガーデンシアター、国立競技場、代々木体育館、東京体育館、日本武道館、サントリーホール、東京オペラシティ
-
-上記カレンダーに該当する祭り・フェス等と、指定会場でのコンサート・スポーツ両方を含めること。`,
+【確認済み会場（スキップ可）】東京ドーム・神宮球場は別途取得済み。以下を検索すること：
+有明アリーナ、有明ガーデンシアター、国立競技場、代々木体育館、東京体育館、日本武道館、サントリーホール、東京オペラシティ
+上記カレンダーに該当する祭り・フェス・花火も含めること。`,
         messages: [{ role: 'user', content: '今日の都内イベントをJSON形式で返してください。' }]
       })
     })
@@ -57,10 +127,12 @@ ${ANNUAL_EVENTS}
     const data = await response.json()
     const text = data.content?.find(b => b.type === 'text')?.text || '[]'
     const match = text.match(/\[[\s\S]*\]/)
-    const events = match ? JSON.parse(match[0]) : []
+    const claudeEvents = match ? JSON.parse(match[0]) : []
 
-    res.status(200).json({ events, updatedAt: new Date().toISOString() })
+    const all = dedup([...venueEvents, ...claudeEvents])
+    res.status(200).json({ events: all, updatedAt: new Date().toISOString() })
   } catch (e) {
-    res.status(500).json({ error: e.message, events: [] })
+    // Claude失敗でも会場スクレイピング分は返す
+    res.status(200).json({ events: venueEvents, updatedAt: new Date().toISOString() })
   }
 }
