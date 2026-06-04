@@ -18,24 +18,50 @@ const ANNUAL_EVENTS = `
 
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15' }
 
-// 東京ドーム公式スケジュールをスクレイピング
-async function fetchTokyoDomeEvents(day, month) {
+// 東京ドーム公式スケジュールをスクレイピング（当月のテーブルのみ）
+async function fetchTokyoDomeEvents(day, month, year) {
   try {
     const html = await fetch('https://www.tokyo-dome.co.jp/dome/event/schedule.html', { headers: HEADERS }).then(r => r.text())
     const events = []
-    const rowRegex = /<tr[^>]*class="c-mod-calender__item[^"]*"[^>]*>([\s\S]*?)<\/tr>/g
-    let m
-    while ((m = rowRegex.exec(html)) !== null) {
-      const row = m[1]
-      const dayMatch = row.match(/calender__day">(\d+)</)
-      const dowMatch = row.match(/calender__day">\(([^)]+)\)/)
-      if (!dayMatch || parseInt(dayMatch[1]) !== day) continue
-      // 月の絞り込み（前後月の同日付を除外するため曜日で判定は難しいので全部取る）
-      const titles = [...row.matchAll(/calender__links">([\s\S]*?)<\/p>/g)]
-        .map(([, t]) => t.replace(/<[^>]+>/g, '').trim()).filter(Boolean)
-      for (const name of titles) {
-        events.push({ name, area: '文京区', venue: '東京ドーム', cap: 55000, end: '21:00', level: 'high', _source: 'dome' })
+
+    // 月ヘッダーの位置を全取得
+    const headerPositions = []
+    const hRe = /c-ttl-set-calender">(\d{4})年0?(\d{1,2})月/g
+    let hm
+    while ((hm = hRe.exec(html)) !== null) {
+      headerPositions.push({ pos: hm.index, year: parseInt(hm[1]), month: parseInt(hm[2]) })
+    }
+
+    // テーブルの位置を全取得
+    const tablePositions = []
+    const tRe = /<table/g
+    let tm
+    while ((tm = tRe.exec(html)) !== null) {
+      tablePositions.push(tm.index)
+    }
+
+    // 各テーブルに直前の月ヘッダーを対応付け
+    for (const tablePos of tablePositions) {
+      const header = [...headerPositions].reverse().find(h => h.pos < tablePos)
+      if (!header || header.year !== year || header.month !== month) continue
+
+      // テーブル内容を取得
+      const tableEnd = html.indexOf('</table>', tablePos)
+      const tableHtml = html.slice(tablePos, tableEnd)
+
+      const rowRe = /<tr[^>]*class="c-mod-calender__item[^"]*"[^>]*>([\s\S]*?)<\/tr>/g
+      let rm
+      while ((rm = rowRe.exec(tableHtml)) !== null) {
+        const row = rm[1]
+        const dm = row.match(/calender__day">(\d+)</)
+        if (!dm || parseInt(dm[1]) !== day) continue
+        const titles = [...row.matchAll(/calender__links">([\s\S]*?)<\/p>/g)]
+          .map(([, t]) => t.replace(/<[^>]+>/g, '').trim()).filter(Boolean)
+        for (const name of titles) {
+          events.push({ name, area: '文京区', venue: '東京ドーム', cap: 55000, end: '21:00', level: 'high', _source: 'dome' })
+        }
       }
+      break // 今月のテーブルは1つだけ
     }
     return events
   } catch { return [] }
@@ -84,7 +110,7 @@ export default async function handler(req, res) {
 
   // 東京ドーム・神宮球場は直接スクレイピング（確実）
   const [domeEvents, jinguEvents] = await Promise.all([
-    fetchTokyoDomeEvents(day, month),
+    fetchTokyoDomeEvents(day, month, year),
     fetchJinguEvents(day, month, year),
   ])
 
