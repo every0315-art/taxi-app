@@ -58,8 +58,8 @@ export default function TrafficInfo() {
                 {closures.map((c, i) => (
                   <div key={i} className="traffic-item">
                     <div className="traffic-road">{c.name}</div>
-                    <div className="traffic-detail"></div>
-                    <span className="traffic-status traffic-bad">通行止め</span>
+                    <div className="traffic-detail">{c.time ? `${c.time}〜` : ''}</div>
+                    <span className="traffic-status traffic-bad">閉鎖</span>
                   </div>
                 ))}
               </div>

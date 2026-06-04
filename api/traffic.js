@@ -15,11 +15,14 @@ export default async function handler(req, res) {
 
     ;(data.item || []).forEach(item => {
       // item: [路線名, ID, 方向, 地点, 区間終点, 原因, 規制種別, 時刻, ?, ?]
-      const [route, , direction, point, endPoint, cause, type] = item
+      const [route, , direction, point, endPoint, cause, type, time] = item
       const name = `${route} ${direction}` + (point ? ` ${point}` : '')
+      const timeStr = time && time !== '0000' && time !== '00'
+        ? `${time.slice(0, 2)}:${time.slice(2, 4)}`
+        : null
 
       if (type === '入口閉鎖' || type === '出口閉鎖') {
-        closures.push({ name: name.trim() })
+        closures.push({ name: name.trim(), time: timeStr })
       } else if (type && type !== '規制なし' && !type.includes('車線規制')) {
         const detail = [cause, endPoint ? `〜${endPoint}` : ''].filter(Boolean).join(' ')
         const level = type.includes('通行止') ? 'bad' : 'mid'
