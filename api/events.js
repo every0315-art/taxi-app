@@ -91,7 +91,8 @@ async function fetchJinguEvents(day, month, year) {
                 const t2 = (v.team2 || '').match(/alt='([^']+)'/)
                 if (t1 && t2) name = `${t1[1]} vs ${t2[1]}`
               }
-              const end = ev.time ? ev.time : '21:00'
+              // 開始時刻から終演を推定（野球約3h、大学試合約4h）
+              const end = estimateEnd(ev.time, ev.category)
               events.push({ name, area: '新宿区', venue: '神宮球場', cap: 30000, end, level: 'mid', _source: 'jingu' })
             }
           }
@@ -100,6 +101,15 @@ async function fetchJinguEvents(day, month, year) {
     }
     return events
   } catch { return [] }
+}
+
+function estimateEnd(startTime, category = '') {
+  if (!startTime || startTime === '0000') return '21:00'
+  const [h, m] = startTime.split(':').map(Number)
+  // 野球は平均3時間、大学トーナメントは複数試合で4時間
+  const hours = category.includes('野球') || category.includes('プロ') ? 3 : 4
+  const endH = (h + hours) % 24
+  return `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
 function normalize(s) {
