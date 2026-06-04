@@ -55,9 +55,12 @@ async function fetchTokyoDomeEvents(day, month, year) {
         const row = rm[1]
         const dm = row.match(/calender__day">(\d+)</)
         if (!dm || parseInt(dm[1]) !== day) continue
-        const titles = [...row.matchAll(/calender__links">([\s\S]*?)<\/p>/g)]
-          .map(([, t]) => t.replace(/<[^>]+>/g, '').trim()).filter(Boolean)
-        for (const name of titles) {
+        const linkBlocks = [...row.matchAll(/calender__links">([\s\S]*?)<\/p>/g)]
+        for (const [, block] of linkBlocks) {
+          // 施設見学ツアー（/dome/visit/）はスキップ
+          if (block.includes('/dome/visit/')) continue
+          const name = block.replace(/<[^>]+>/g, '').trim()
+          if (!name) continue
           events.push({ name, area: '文京区', venue: '東京ドーム', cap: 55000, end: '21:00', level: 'high', _source: 'dome' })
         }
       }
