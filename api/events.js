@@ -1,20 +1,31 @@
 import { parse } from 'node-html-parser'
 
 // 年間大規模イベントリスト（Notionデータベースより）
-const ANNUAL_EVENTS = `
-【1月】浅草寺初詣(1/1-3 浅草寺 数百万人), 東京オートサロン(1/9-11 幕張メッセ), 世田谷ボロ市(1/15-16 世田谷)
-【2月】節分会(2/3 浅草寺・池上本門寺ほか), ワンダーフェスティバル冬(2/8 幕張メッセ)
-【3月】東京マラソン(3/1 都心部3万人超), 桜まつり(3月下旬-4月上旬 目黒川ほか), 東京モーターサイクルショー(3/27-29 東京ビッグサイト), AnimeJapan(3/28-29 東京ビッグサイト 約15.6万人)
-【4月】ニコニコ超会議(4/25-26 幕張メッセ 13万人超)
-【5月】くらやみ祭(5/3-6 府中 大國魂神社), 東京コミティア(5月上旬 東京ビッグサイト), 神田祭(5/9ほか 神田明神), 三社祭(5/15-17 浅草神社 約180万人), メトロック(5/16-17 海の森公園), デザインフェスタ春(5/16-17 東京ビッグサイト), 日比谷オクトーバーフェスト(5月中旬 日比谷公園)
-【6月】鳥越祭(6月上旬 鳥越神社), 山王祭(6/14神幸祭 日枝神社 2026年は本祭), 81 MUSIC FESTIVAL(6/27 お台場 TOYOTA ARENA TOKYO), 東京みなと祭(6/27-28 東京国際クルーズターミナル)
-【7月】World DJ Festival Japan(7/4-5 海の森水上競技場), 入谷朝顔市(7/6-8 入谷鬼子母神), ほおずき市(7/9-10 浅草寺), みたままつり(7/13-16 靖国神社), ハンドメイドインジャパンフェス(7/18-19 東京ビッグサイト), 隅田川花火大会(7/25 隅田川 約100万人), TOKYO IDOL FESTIVAL(7/31-8/2 お台場 約9万人)
-【8月】神宮外苑花火大会(8月中旬 神宮外苑), サマーソニック(8/15-16 幕張ほか), コミックマーケット夏(8/15-16 東京ビッグサイト), 深川八幡祭り(8月中旬 富岡八幡宮), 高円寺阿波おどり(8/29-30 高円寺 約100万人), 原宿表参道元氣祭スーパーよさこい(8/29-30 原宿・表参道)
-【9月】ROCK IN JAPAN FESTIVAL(9/12-13・19-21 千葉市 5日間30万人), ULTRA JAPAN(9/12-13 お台場), 東京ゲームショウ(9/17-21 幕張メッセ 約26万人), 根津神社例大祭(9月下旬 根津神社)
-【10月】TOKYO ISLAND(10/10-12 海の森公園), 雑司ヶ谷鬼子母神御会式(10月中旬), 東京レガシーハーフマラソン(10/18 国立競技場発着), 東京よさこい(10月 池袋), ジャパンモビリティショー(10月下旬 東京ビッグサイト 130万人超)
-【11月】酉の市(一の酉11/7・二の酉11/19 鷲神社・花園神社など), デザインフェスタ秋(11/14-15 東京ビッグサイト), 七五三参拝シーズン(11/15 明治神宮ほか)
-【12月】羽子板市(12/17-19 浅草寺), ジャンプフェスタ(12/19-20 幕張メッセ), コミックマーケット冬(12/29-31 東京ビッグサイト), カウントダウン年末イベント(12/31 都内各所)
-`
+const ANNUAL_EVENTS_BY_MONTH = {
+  1: '浅草寺初詣(1/1-3), 東京オートサロン(1/9-11 幕張メッセ), 世田谷ボロ市(1/15-16)',
+  2: '節分会(2/3), ワンダーフェスティバル冬(2/8 幕張メッセ)',
+  3: '東京マラソン(3/1), 桜まつり(3月下旬-4月上旬), AnimeJapan(3/28-29 東京ビッグサイト)',
+  4: 'ニコニコ超会議(4/25-26 幕張メッセ)',
+  5: 'くらやみ祭(5/3-6), 三社祭(5/15-17 浅草神社), メトロック(5/16-17), デザインフェスタ春(5/16-17)',
+  6: '鳥越祭(6月上旬), 山王祭(6/14), 81 MUSIC FESTIVAL(6/27 お台場), 東京みなと祭(6/27-28)',
+  7: '入谷朝顔市(7/6-8), みたままつり(7/13-16 靖国神社), 隅田川花火大会(7/25 約100万人), TOKYO IDOL FESTIVAL(7/31-8/2)',
+  8: 'サマーソニック(8/15-16), コミックマーケット夏(8/15-16), 高円寺阿波おどり(8/29-30 約100万人)',
+  9: 'ROCK IN JAPAN FESTIVAL(9/12-21 千葉市), 東京ゲームショウ(9/17-21 幕張メッセ)',
+  10: 'TOKYO ISLAND(10/10-12), 東京レガシーハーフマラソン(10/18), ジャパンモビリティショー(10月下旬)',
+  11: '酉の市(11/7・11/19), デザインフェスタ秋(11/14-15), 七五三(11/15)',
+  12: 'ジャンプフェスタ(12/19-20 幕張メッセ), コミックマーケット冬(12/29-31), カウントダウン(12/31)',
+}
+
+function getRelevantEvents(month) {
+  const prev = month === 1 ? 12 : month - 1
+  const next = month === 12 ? 1 : month + 1
+  return [prev, month, next]
+    .map(m => `【${m}月】${ANNUAL_EVENTS_BY_MONTH[m]}`)
+    .join('\n')
+}
+
+// 1日1回のAI検索キャッシュ
+let aiCache = { dateKey: null, events: null }
 
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15' }
 
@@ -175,6 +186,44 @@ async function fetchYoyogiEvents(day, month, year) {
   return events
 }
 
+// 国立競技場（MUFGスタジアム）
+async function fetchKokuritsuEvents(day, month, year) {
+  const events = []
+  try {
+    const html = await fetch('https://jns-e.com/event/', { headers: HEADERS }).then(r => r.text())
+    // 日付フォーマット: 202606/06 または 6/6のような形式
+    const MM = String(month).padStart(2, '0')
+    const DD = String(day).padStart(2, '0')
+    const datePattern = new RegExp(`${year}${MM}/${DD}|${month}/${day}[^\\d]`)
+
+    // <a>タグブロックで分割
+    const blocks = html.split(/<a\s/i).slice(1)
+    const seen = new Set()
+    for (const block of blocks) {
+      if (!datePattern.test(block)) continue
+      // テキスト抽出
+      const text = block.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      // イベント名: "日程" や "スポーツ" "音楽" の後の長いテキストを抽出
+      const nameMatch = text.match(/(?:スポーツ|音楽|その他)\s+(.{4,60?})(?:\s+日程|\s+開始|\s+主催|$)/)
+        || text.match(/\d{4}[\d\/]+[月火水木金土日]\s+(.{4,60?})(?:\s+日程|\s+開始|\s+主催|$)/)
+      if (!nameMatch) continue
+      const name = nameMatch[1].replace(/\s+/g, ' ').trim()
+      // 終演時刻推定（キックオフ時間＋2.5h、開演時間＋2.5h）
+      const timeMatch = text.match(/(\d{1,2}):(\d{2})\s*(?:キックオフ|開演|開始)/)
+      let end = '22:00'
+      if (timeMatch) {
+        const endH = (parseInt(timeMatch[1]) + 2) % 24
+        end = `${String(endH).padStart(2, '0')}:${timeMatch[2]}`
+      }
+      if (name && !seen.has(name)) {
+        seen.add(name)
+        events.push({ name, area: '新宿区', venue: '国立競技場', cap: 68000, end, level: 'high', _source: 'kokuritsu' })
+      }
+    }
+  } catch { }
+  return events
+}
+
 // 東京体育館（メインアリーナ）
 async function fetchTokyoGymEvents(day, month, year) {
   const JA_MONTHS = ['','1','2','3','4','5','6','7','8','9','10','11','12']
@@ -241,16 +290,17 @@ export default async function handler(req, res) {
   const day = now.getDate(), month = now.getMonth() + 1, year = now.getFullYear()
 
   // 各会場を直接スクレイピング（確実）
-  const [domeEvents, jinguEvents, gardenEvents, ariakeEvents, yoyogiEvents, gymEvents] = await Promise.all([
+  const [domeEvents, jinguEvents, gardenEvents, ariakeEvents, yoyogiEvents, gymEvents, kokuritsuEvents] = await Promise.all([
     fetchTokyoDomeEvents(day, month, year),
     fetchJinguEvents(day, month, year),
     fetchGardenTheaterEvents(day, month),
     fetchAriakeArenaEvents(day, month),
     fetchYoyogiEvents(day, month, year),
     fetchTokyoGymEvents(day, month, year),
+    fetchKokuritsuEvents(day, month, year),
   ])
 
-  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...gardenEvents, ...ariakeEvents, ...yoyogiEvents, ...gymEvents])
+  const venueEvents = dedup([...domeEvents, ...jinguEvents, ...gardenEvents, ...ariakeEvents, ...yoyogiEvents, ...gymEvents, ...kokuritsuEvents])
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -258,6 +308,14 @@ export default async function handler(req, res) {
   }
 
   const today = now.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+  const currentMonth = now.getMonth() + 1
+  const dateKey = `${year}-${month}-${day}`
+
+  // キャッシュヒット → AI呼び出しをスキップ
+  if (aiCache.dateKey === dateKey && aiCache.events) {
+    const all = dedup([...venueEvents, ...aiCache.events])
+    return res.status(200).json({ events: all, updatedAt: new Date().toISOString() })
+  }
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -269,29 +327,18 @@ export default async function handler(req, res) {
         'anthropic-beta': 'web-search-2025-03-05',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `今日（${today}）に東京都内で開催されるイベントをウェブ検索し、以下のJSON配列のみ返してください。説明・前置き・Markdownは不要です。
+        model: 'claude-haiku-4-5',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }],
+        system: `今日（${today}）の東京都内イベントをJSON配列のみで返す。前置き不要。
 [{"name":"イベント名","area":"エリア","venue":"会場名","cap":人数(数値),"end":"終演時刻HH:MM","level":"high または mid"}]
-該当なしの場合は[]のみ。levelはcap5万人以上をhigh、それ未満をmid。
+該当なしは[]。levelはcap5万人以上をhigh、未満をmid。東京ドーム・神宮球場・国立競技場は除外。
 
-【東京ドーム・神宮球場は除外】（別途取得済み）
+【検索対象会場】日本武道館, 有明アリーナ, 有明ガーデンシアター, 代々木体育館, 東京体育館
 
-【必ず個別に検索する会場と検索キーワード】
-以下を「会場名 ${today.slice(0,10)} イベント」でそれぞれ検索し、今日開催のものをすべて含めること：
-- 日本武道館（千代田区）
-- 有明アリーナ（江東区）
-- 有明ガーデンシアター（江東区）
-- 国立競技場（新宿区）
-- 国立代々木競技場・代々木体育館（渋谷区）
-- 東京体育館（渋谷区）
-- サントリーホール（港区）
-- 東京オペラシティ（新宿区）
-
-【年間イベントカレンダー参照（祭り・フェス・花火も含めること）】
-${ANNUAL_EVENTS}`,
-        messages: [{ role: 'user', content: `${today}に上記8会場で開催されているイベントと、年間カレンダーに合致する都内イベントをJSON配列で返してください。` }]
+【参考カレンダー】
+${getRelevantEvents(currentMonth)}`,
+        messages: [{ role: 'user', content: `${today}の都内イベントをJSON配列で返してください。` }]
       })
     })
 
@@ -299,6 +346,7 @@ ${ANNUAL_EVENTS}`,
     const text = data.content?.find(b => b.type === 'text')?.text || '[]'
     const match = text.match(/\[[\s\S]*\]/)
     const claudeEvents = match ? JSON.parse(match[0]) : []
+    aiCache = { dateKey, events: claudeEvents }
 
     const all = dedup([...venueEvents, ...claudeEvents])
     res.status(200).json({ events: all, updatedAt: new Date().toISOString() })

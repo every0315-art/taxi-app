@@ -43,7 +43,11 @@ export default async function handler(req, res) {
 
   try {
     const results = await Promise.allSettled(
-      POOLS.map(p => fetch(p.url, { headers: HEADERS }).then(r => r.text()))
+      POOLS.map(p => {
+        const ctrl = new AbortController()
+        setTimeout(() => ctrl.abort(), 5000)
+        return fetch(p.url, { headers: HEADERS, signal: ctrl.signal }).then(r => r.text())
+      })
     )
 
     const pools = POOLS.map((p, i) => {

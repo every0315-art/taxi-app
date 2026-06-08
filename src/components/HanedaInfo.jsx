@@ -29,6 +29,18 @@ const FLAT_RATES = [
 const STATUS_CLASS = { 空車: 'haneda-ok', 混雑: 'haneda-mid', 満車: 'haneda-full', エラー: 'haneda-err' }
 const POOL_LEVEL_CLASS = { free: 'pool-free', normal: 'pool-normal', busy: 'pool-busy', closed: 'pool-closed', unknown: 'pool-unknown' }
 
+const CAMERAS = [
+  { label: '第1待機所 南側',   src: 'https://ttc.taxi-inf.jp/Real01_line.jpg' },
+  { label: '第1待機所 東側',   src: 'https://ttc.taxi-inf.jp/Real02.jpg' },
+  { label: '第3待機所 前方',   src: 'https://ttc.taxi-inf.jp/Real108.jpg' },
+  { label: '第3待機所 後方',   src: 'https://ttc.taxi-inf.jp/Real109.jpg' },
+  { label: '第3待機所 全体',   src: 'https://ttc.taxi-inf.jp/Real03.jpg' },
+  { label: '第4待機所',        src: 'https://ttc.taxi-inf.jp/Real04.jpg' },
+  { label: '第4乗場 A',        src: 'https://ttc.taxi-inf.jp/Real104_line.jpg' },
+  { label: '第4乗場 B',        src: 'https://ttc.taxi-inf.jp/Real105_line.jpg' },
+  { label: '第5乗場(第3T)',    src: 'https://ttc.taxi-inf.jp/Real106.jpg' },
+]
+
 export default function HanedaInfo() {
   const [parking, setParking]       = useState([])
   const [pools, setPools]           = useState([])
@@ -37,6 +49,7 @@ export default function HanedaInfo() {
   const [loading, setLoading]       = useState(true)
   const [error, setError]           = useState(false)
   const [tab, setTab]               = useState('pool')
+  const [camTs, setCamTs]           = useState(Date.now())
 
   const fetchData = useCallback(() => {
     setLoading(true)
@@ -57,6 +70,12 @@ export default function HanedaInfo() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  useEffect(() => {
+    if (tab !== 'pool') return
+    const id = setInterval(() => setCamTs(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [tab])
+
   const fullCount = parking.filter(p => p.status === '満車').length
   const allFull   = parking.length > 0 && fullCount === parking.length
 
@@ -71,25 +90,37 @@ export default function HanedaInfo() {
       {loading && <div className="train-status-msg">読み込み中...</div>}
       {error   && <div className="train-status-msg error">情報を取得できませんでした</div>}
 
-      {!loading && !error && tab === 'pool' && (
+      {tab === 'pool' && (
         <>
-          <div className="pool-list">
-            {pools.map(p => (
-              <div key={p.id} className="pool-item">
-                <span className="pool-label">{p.label}</span>
-                <span className={`pool-status ${POOL_LEVEL_CLASS[p.level] || 'pool-unknown'}`}>
-                  {p.level === 'closed' ? '運用外' : p.status}
-                </span>
+          {pools.some(p => p.status !== '取得失敗' && p.status !== '情報なし') && (
+            <div className="pool-list">
+              {pools.filter(p => p.status !== '取得失敗' && p.status !== '情報なし').map(p => (
+                <div key={p.id} className="pool-item">
+                  <span className="pool-label">{p.label}</span>
+                  <span className={`pool-status ${POOL_LEVEL_CLASS[p.level] || 'pool-unknown'}`}>
+                    {p.level === 'closed' ? '運用外' : p.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="pool-cameras">
+            {CAMERAS.map(c => (
+              <div key={c.label} className="pool-camera-item">
+                <div className="pool-camera-label">{c.label}</div>
+                <img
+                  src={`${c.src}?t=${camTs}`}
+                  alt={c.label}
+                  className="pool-camera-img"
+                />
               </div>
             ))}
           </div>
           <div className="traffic-update-row">
-            {poolUpdated && (
-              <span className="traffic-update">
-                東京タクシーセンター / {poolUpdated.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-            <button className="btn-refresh" onClick={fetchData} disabled={loading}>更新</button>
+            <span className="traffic-update">
+              東京タクシーセンター / {new Date(camTs).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })} (30秒自動更新)
+            </span>
+            <button className="btn-refresh" onClick={() => setCamTs(Date.now())}>更新</button>
           </div>
         </>
       )}

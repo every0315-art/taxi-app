@@ -17,67 +17,24 @@ async function loadAll() {
   }
 }
 
-function EventSummary({ events }) {
-  if (events === null) return <span className="pickup-sub error">取得失敗</span>
-  if (events.length === 0) return <span className="pickup-sub ok">予定なし</span>
+const LEVEL_CLASS = { high: 'badge-high', mid: 'badge-mid' }
+
+function PickupCard({ icon, label, tabKey, onOpen, summary, children, loading }) {
   return (
-    <>
-      <span className="pickup-badge warn">{events.length}件</span>
-      <span className="pickup-sub">{events[0].venue}</span>
-    </>
-  )
-}
-
-function TrafficSummary({ data }) {
-  if (data === null) return <span className="pickup-sub error">取得失敗</span>
-  const issues = (data.traffic || []).filter(t => t.level === 'bad' || t.level === 'mid')
-  const closures = (data.closures || [])
-  if (issues.length === 0 && closures.length === 0)
-    return <span className="pickup-sub ok">順調</span>
-  return (
-    <>
-      {issues.length > 0 && <span className="pickup-badge warn">{issues.length}件渋滞</span>}
-      {closures.length > 0 && <span className="pickup-badge alert">{closures.length}閉鎖</span>}
-    </>
-  )
-}
-
-function TrainSummary({ trains }) {
-  if (trains === null) return <span className="pickup-sub error">取得失敗</span>
-  if (trains.length === 0) return <span className="pickup-sub ok">全線正常</span>
-  return (
-    <>
-      <span className="pickup-badge warn">{trains.length}路線</span>
-      <span className="pickup-sub">{trains[0].name}</span>
-    </>
-  )
-}
-
-function AirportSummary({ parking, pools }) {
-  const allClosed = pools && pools.length > 0 && pools.every(p => p.level === 'closed')
-  const busyPools = pools ? pools.filter(p => p.level === 'busy').length : 0
-
-  const full  = parking ? parking.filter(p => p.status === '満車').length : 0
-  const crowd = parking ? parking.filter(p => p.status === '混雑').length : 0
-  const allFull = parking && parking.length > 0 && full === parking.length
-
-  if (parking === null && pools === null) return <span className="pickup-sub error">取得失敗</span>
-
-  return (
-    <>
-      {allClosed
-        ? <span className="pickup-sub">プール運用外</span>
-        : busyPools > 0
-          ? <span className="pickup-badge warn">P混雑 {busyPools}箇所</span>
-          : <span className="pickup-sub ok">P空き</span>
-      }
-      {allFull
-        ? <span className="pickup-badge alert">駐車場満車</span>
-        : full > 0
-          ? <span className="pickup-badge warn">満車 {full}棟</span>
-          : null
-      }
-    </>
+    <div className="pickup-card-v2">
+      <button className="pickup-card-header" onClick={() => onOpen(tabKey)}>
+        <span className="pickup-icon">{icon}</span>
+        <span className="pickup-label">{label}</span>
+        {loading
+          ? <span className="pickup-sub" style={{ marginLeft: 'auto' }}>取得中...</span>
+          : <span className="pickup-card-summary">{summary}</span>
+        }
+        <span className="pickup-card-arrow">›</span>
+      </button>
+      {!loading && (
+        <div className="pickup-card-body">{children}</div>
+      )}
+    </div>
   )
 }
 
@@ -89,37 +46,114 @@ export default function HomePickup({ onTabOpen }) {
     loadAll().then(d => { setData(d); setLoading(false) })
   }, [])
 
-  const tiles = [
-    { key: 'event',   icon: '🎪', label: 'イベント' },
-    { key: 'traffic', icon: '🚗', label: '道路状況' },
-    { key: 'train',   icon: '🚆', label: '電車状況' },
-    { key: 'airport', icon: '✈️', label: '空港' },
-  ]
+  const events  = data?.events  ?? []
+  const traffic = data?.traffic ?? null
+  const trains  = data?.trains  ?? []
+  const parking = data?.parking ?? []
+  const pools   = data?.pools   ?? []
+
+  const trafficIssues  = traffic ? [...(traffic.traffic || []).filter(t => t.level !== 'good'), ...(traffic.closures || [])] : []
+  const knownPools     = pools.some(p => p.level !== 'unknown')
 
   return (
-    <div className="card pickup-card">
-      <div className="pickup-grid">
-        {tiles.map(t => (
-          <button key={t.key} className="pickup-tile" onClick={() => onTabOpen(t.key)}>
-            <div className="pickup-tile-top">
-              <span className="pickup-icon">{t.icon}</span>
-              <span className="pickup-label">{t.label}</span>
+    <div className="pickup-stack">
+
+      {/* イベント */}
+      <PickupCard
+        icon="🎪" label="イベント" tabKey="event" onOpen={onTabOpen} loading={loading}
+        summary={
+          events.length === 0
+            ? <span className="pickup-sub ok">予定なし</span>
+            : <span className="pickup-badge warn">{events.length}件</span>
+        }
+      >
+        {events.length === 0
+          ? <p className="pickup-empty">本日のイベントはありません</p>
+          : events.slice(0, 5).map((ev, i) => (
+            <div key={i} className="pickup-row">
+              <span className={`badge ${LEVEL_CLASS[ev.level] || 'badge-high'}`}>{ev.level === 'high' ? '混雑' : '注目'}</span>
+              <span className="pickup-row-main">{ev.name}</span>
+              <span className="pickup-row-sub">{ev.venue}</span>
             </div>
-            <div className="pickup-tile-body">
-              {loading ? (
-                <span className="pickup-sub">取得中...</span>
-              ) : (
-                <>
-                  {t.key === 'event'   && <EventSummary   events={data?.events} />}
-                  {t.key === 'traffic' && <TrafficSummary data={data?.traffic} />}
-                  {t.key === 'train'   && <TrainSummary   trains={data?.trains} />}
-                  {t.key === 'airport' && <AirportSummary parking={data?.parking} pools={data?.pools} />}
-                </>
-              )}
+          ))
+        }
+      </PickupCard>
+
+      {/* 道路状況 */}
+      <PickupCard
+        icon="🚗" label="道路状況" tabKey="traffic" onOpen={onTabOpen} loading={loading}
+        summary={
+          trafficIssues.length === 0
+            ? <span className="pickup-sub ok">順調</span>
+            : <span className="pickup-badge warn">{trafficIssues.length}件</span>
+        }
+      >
+        {trafficIssues.length === 0
+          ? <p className="pickup-empty">渋滞・通行止めなし</p>
+          : trafficIssues.slice(0, 5).map((t, i) => (
+            <div key={i} className="pickup-row">
+              <span className={`badge ${t.level === 'bad' || t.closed ? 'badge-high' : 'badge-mid'}`}>
+                {t.closed ? '閉鎖' : t.level === 'bad' ? '渋滞' : '混雑'}
+              </span>
+              <span className="pickup-row-main">{t.road || t.name || t.route}</span>
+              <span className="pickup-row-sub">{t.section || t.direction || ''}</span>
             </div>
-          </button>
+          ))
+        }
+      </PickupCard>
+
+      {/* 電車状況 */}
+      <PickupCard
+        icon="🚆" label="電車状況" tabKey="train" onOpen={onTabOpen} loading={loading}
+        summary={
+          trains.length === 0
+            ? <span className="pickup-sub ok">全線正常</span>
+            : <span className="pickup-badge warn">{trains.length}路線</span>
+        }
+      >
+        {trains.length === 0
+          ? <p className="pickup-empty">遅延・運休なし</p>
+          : trains.slice(0, 5).map((t, i) => (
+            <div key={i} className="pickup-row">
+              <span className="badge badge-mid">遅延</span>
+              <span className="pickup-row-main">{t.name}</span>
+              <span className="pickup-row-sub">{t.status || ''}</span>
+            </div>
+          ))
+        }
+      </PickupCard>
+
+      {/* 空港 */}
+      <PickupCard
+        icon="✈️" label="空港" tabKey="airport" onOpen={onTabOpen} loading={loading}
+        summary={
+          parking.length === 0
+            ? <span className="pickup-sub">---</span>
+            : parking.filter(p => p.status === '満車').length === parking.length
+              ? <span className="pickup-badge alert">全満車</span>
+              : <span className="pickup-sub ok">空きあり</span>
+        }
+      >
+        {parking.slice(0, 3).map((p, i) => (
+          <div key={i} className="pickup-row">
+            <span className={`badge ${p.status === '満車' ? 'badge-high' : p.status === '混雑' ? 'badge-mid' : 'badge-ok'}`}>
+              {p.status}
+            </span>
+            <span className="pickup-row-main">{p.name}</span>
+            <span className="pickup-row-sub">{p.terminal}</span>
+          </div>
         ))}
-      </div>
+        {knownPools && pools.slice(0, 2).map((p, i) => (
+          <div key={`pool-${i}`} className="pickup-row">
+            <span className={`badge ${p.level === 'busy' ? 'badge-mid' : p.level === 'closed' ? 'badge-ok' : 'badge-ok'}`}>
+              {p.level === 'busy' ? '混雑' : p.level === 'closed' ? '運用外' : '空き'}
+            </span>
+            <span className="pickup-row-main">{p.label}</span>
+          </div>
+        ))}
+        {!knownPools && parking.length === 0 && <p className="pickup-empty">情報取得中</p>}
+      </PickupCard>
+
     </div>
   )
 }

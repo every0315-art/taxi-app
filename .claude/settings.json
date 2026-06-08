@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl *)",
+      "Bash(curl*)",
       "Bash(npm run build)",
       "Bash(npm run build *)",
       "Bash(git push *)",
@@ -15,7 +15,24 @@
       "Bash(pip3 install *)",
       "Bash(mkdir *)",
       "Bash(pkill *)",
-      "Bash(sleep *)"
+      "Bash(sleep *)",
+      "Bash(vercel*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "cd \"/Users/tetsuro/every/アプリ開発担当/タクシー営業アプリ\" && vercel --prod > /tmp/vercel-autodeploy.log 2>&1",
+            "async": true,
+            "statusMessage": "本番デプロイ中..."
+          }
+        ]
+      }
     ]
   }
 }
