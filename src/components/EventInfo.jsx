@@ -34,7 +34,7 @@ export default function EventInfo() {
       <div className="traffic-update-row">
         {updatedAt && (
           <span className="traffic-update">
-            Claude AI / {updatedAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+            年間カレンダー / {updatedAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
         <button className="btn-refresh" onClick={fetchData} disabled={loading}>
