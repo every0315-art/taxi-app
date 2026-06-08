@@ -19,11 +19,10 @@ async function loadAll() {
 
 const LEVEL_CLASS = { high: 'badge-high', mid: 'badge-mid' }
 
-function PickupCard({ icon, label, tabKey, onOpen, summary, children, loading }) {
+function PickupCard({ label, tabKey, onOpen, summary, children, loading }) {
   return (
     <div className="pickup-card-v2">
       <button className="pickup-card-header" onClick={() => onOpen(tabKey)}>
-        <span className="pickup-icon">{icon}</span>
         <span className="pickup-label">{label}</span>
         {loading
           ? <span className="pickup-sub" style={{ marginLeft: 'auto' }}>取得中...</span>
@@ -60,7 +59,7 @@ export default function HomePickup({ onTabOpen }) {
 
       {/* イベント */}
       <PickupCard
-        icon="🎪" label="イベント" tabKey="event" onOpen={onTabOpen} loading={loading}
+        label="イベント" tabKey="event" onOpen={onTabOpen} loading={loading}
         summary={
           events.length === 0
             ? <span className="pickup-sub ok">予定なし</span>
@@ -81,7 +80,7 @@ export default function HomePickup({ onTabOpen }) {
 
       {/* 道路状況 */}
       <PickupCard
-        icon="🚗" label="道路状況" tabKey="traffic" onOpen={onTabOpen} loading={loading}
+        label="道路状況" tabKey="traffic" onOpen={onTabOpen} loading={loading}
         summary={
           trafficIssues.length === 0
             ? <span className="pickup-sub ok">順調</span>
@@ -104,7 +103,7 @@ export default function HomePickup({ onTabOpen }) {
 
       {/* 電車状況 */}
       <PickupCard
-        icon="🚆" label="電車状況" tabKey="train" onOpen={onTabOpen} loading={loading}
+        label="電車状況" tabKey="train" onOpen={onTabOpen} loading={loading}
         summary={
           trains.length === 0
             ? <span className="pickup-sub ok">全線正常</span>
@@ -125,7 +124,7 @@ export default function HomePickup({ onTabOpen }) {
 
       {/* 空港 */}
       <PickupCard
-        icon="✈️" label="空港" tabKey="airport" onOpen={onTabOpen} loading={loading}
+        label="空港" tabKey="airport" onOpen={onTabOpen} loading={loading}
         summary={
           parking.length === 0
             ? <span className="pickup-sub">---</span>

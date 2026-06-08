@@ -19,10 +19,10 @@ const TOP_TABS = [
 ]
 
 const BOTTOM_TABS = [
-  { key: 'event',   label: 'イベント', icon: '🎪' },
-  { key: 'traffic', label: '道路状況', icon: '🚗' },
-  { key: 'train',   label: '電車状況', icon: '🚆' },
-  { key: 'airport', label: '空港',     icon: '✈️' },
+  { key: 'event',   label: 'イベント' },
+  { key: 'traffic', label: '道路状況' },
+  { key: 'train',   label: '電車状況' },
+  { key: 'airport', label: '空港' },
 ]
 
 async function fetchBriefing() {
@@ -122,7 +122,6 @@ export default function Dashboard() {
             className={`bottom-tab ${bottomTab === t.key ? 'bottom-tab-active' : ''}`}
             onClick={() => handleBottomTab(t.key)}
           >
-            <span className="bottom-tab-icon">{t.icon}</span>
             <span className="bottom-tab-label">{t.label}</span>
           </button>
         ))}
