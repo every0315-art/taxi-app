@@ -4,6 +4,7 @@ import StatusToggle from '../components/StatusToggle'
 import RideRequest from '../components/RideRequest'
 import DailySummary from '../components/DailySummary'
 import SalesRecord from '../components/SalesRecord'
+import CloudSync from '../components/CloudSync'
 import EventInfo from '../components/EventInfo'
 import TrafficInfo from '../components/TrafficInfo'
 import TrainInfo from '../components/TrainInfo'
@@ -99,6 +100,7 @@ export default function Dashboard() {
         <>
           <DailySummary sales={sales} totalSales={totalSales} />
           <SalesRecord onAdd={addSale} />
+          <CloudSync sales={sales} />
         </>
       )}
 
